@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace LinqConsoleApp
@@ -200,17 +201,15 @@ namespace LinqConsoleApp
             var res = from emp in Emps
                       where emp.Job == "Backend programmer"
                       select new
-                      {
+                      {                                      //typ anonimowy z aliasami nazwisko i zawód
                           Nazwisko = emp.Ename,
                           Zawod = emp.Job
                       };
 
 
             //2. Lambda and Extension methods
-            // ResultDataGridView.DataSource =
-            // res.ToList().ToString()
-            for(int i = 0; i <  res.Count(); i++)
-               Console.WriteLine( "Nazwisko " + res.ElementAt(i).Nazwisko  + " Job " + res.ElementAt(i).Zawod );
+            //ResultsDataGridView.DataSource = res.ToList();
+            var res2 = Emps.Where(e => e.Job == "Backend programmer");
         }
 
         /// <summary>
@@ -218,11 +217,20 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad2()
         {
-            var res = Emps.Where((emp) => emp.Job == "Frontend programmer" && emp.Salary > 1000)
-                          .OrderByDescending(emp => emp.Ename);
-            Console.WriteLine("Przyklad 2");
-            ShowResEmp(res);
+            var res = from emp in Emps 
+                      join dept in Depts on emp.Deptno equals dept.Deptno               //inner join
+                      where emp.Job == "Frontend programmer" && emp.Salary > 1000
+                          orderby emp.Ename descending
+                          select emp;
+
+            //2. Lambda and Extension methods
+            var res2 = Emps
+                .Where(e => e.Job == "Backend programmer" && e.Salary > 1000)
+                .OrderByDescending(e => e.Ename);
+
+
         }
+
 
         private void ShowResEmp(IEnumerable<Emp> res) {
             for (int i = 0; i < res.Count(); i++) 
@@ -236,9 +244,11 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad3()
         {
-            var res = Emps.Max(emp => emp.Salary);
-            Console.WriteLine("Przyklad 3");
-            Console.WriteLine(res);
+            var res = (from emp in Emps
+                       select emp).Max();
+
+            //2. Lambda and Extension methods
+            var res2 = Emps.Max(e => e.Salary);
         }
 
         /// <summary>
@@ -246,9 +256,14 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad4()
         {
-            Console.WriteLine("Przyklad 4");
-            var res = Emps.Where(emp => emp.Salary == (Emps.Max(emp => emp.Salary)));
-             ShowResEmp(res);
+            var res = from emp in Emps
+                      where emp.Salary == (from xemp in Emps select xemp.Salary).Max()
+                      select emp
+                      ;
+
+            //2. Lambda and Extension methods
+            var res2 = Emps
+                .Where(e => e.Salary == Emps.Max(x => x.Salary));
         }
 
         /// <summary>
@@ -256,16 +271,22 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad5()
         {
-            Console.WriteLine("Przyklad 5");
-            var res = Emps.Select(emp => new {
-                                    Nazwisko = emp.Ename,
-                                    Praca = emp.Salary
-                                  }
-            );
+            //1. Query syntax (SQL)
+            var res = from emp in Emps
+                      select new
+                      {                                     
+                          Nazwisko = emp.Ename,
+                          Praca = emp.Job
+                      };
 
-            for (int i = 0; i < res.Count(); i++) {
-                Console.WriteLine("Nazwisko " + res.ElementAt(i).Nazwisko + " Praca " + res.ElementAt(i).Praca);
-            }
+
+            //2. Lambda and Extension methods
+            //ResultsDataGridView.DataSource = res.ToList();
+            var res2 = Emps.Select(emp => new
+            {
+                Nazwisko = emp.Ename,
+                Praca = emp.Job
+            });
         }
 
         /// <summary>
@@ -275,27 +296,23 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad6()
         {
-            Console.WriteLine("Przyklad 6");
             var res = from emp in Emps
                       join dept in Depts on emp.Deptno equals dept.Deptno
-                      select new { 
-                        emp.Ename,
-                        emp.Job,
-                        dept.Dname
+                      select new
+                      {
+                          emp.Ename,
+                          emp.Job,
+                          dept.Dname
                       };
 
-            /*
-var res = Emps.InnerJoin
-   .Select(emp => new
-{
-
-}
-)
-*/
-            foreach (var result  in res) 
-            {
-                Console.WriteLine("Ename " + result.Ename + ", Job " + result.Job + ", Dname " + result.Dname );
-            } 
+            //2. Lambda and Extension methods
+            var res2 = Emps
+                .Join(Depts, emp => emp.Deptno, dept => dept.Deptno, (emp, dept)
+                => new
+                {
+                    emp,
+                    dept 
+                });
         }
 
         /// <summary>
