@@ -320,27 +320,18 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad7()
         {
-            Console.WriteLine("Przyklad 7");
-
             var res = from emp in Emps
-                      group new { Praca = emp.Job } by emp.Job
-                      ; // , Emps.Count()
-            /* select new
+                      join dept in Depts on emp.Deptno equals dept.Deptno
+                      select new
                       {
-                          Praca = emp.Job,
-                          Emps.Count()
-                       };
-            */
-            /*
-            var res = Emps.GroupBy(emp => emp.Job)
-                          .Count(emp => 1 == 1)
-                          .Select(emp => { return emp.Job; );// .Count();
-            */
-            for (int i = 0; i < res.Count(); i++)
-            {
-                Console.WriteLine("Praca " + res.ElementAt(i).Key + ", Count " + res.ElementAt(i).Count(emp => 1 == 1));
-            }
+                          Praca = emp.Job
+                      };
 
+            var res2 = Emps
+                .GroupBy(emp => emp.Job);
+
+
+            //pets.Count(p => p.Vaccinated == false);
         }
 
         /// <summary>
@@ -349,11 +340,7 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad8()
         {
-            Console.WriteLine("Przyklad 8");
-            var res = Emps.Where(emp => emp.Job == "Backend programmer");
-            // .Select(emp => true );
-            if (res.Count() > 0) Console.WriteLine("true");
-            else Console.WriteLine("false");
+            var res2 = Emps.Any(emp => emp.Job== "Backend programmer");
         }
 
         /// <summary>
@@ -389,14 +376,24 @@ namespace LinqConsoleApp
         public void Przyklad11()
         {
             Console.WriteLine("Przyklad 11");
-            
+
+            var res = Emps.Aggregate((max, next) => max.Salary < next.Salary ? next : max);
+            Console.WriteLine("Emp " + res);
+
         }
 
         //Z pomocą języka LINQ i metody SelectMany wykonaj złączenie
         //typu CROSS JOIN
         public void Przyklad12()
         {
-            
+            var res = Emps.SelectMany(e => Depts, (e, d) => new
+            {
+                empToString = e.ToString(),
+                //deptToString = d.ToString()
+                d.Dname,
+                d.Deptno
+            });
+
         }
     }
 }
